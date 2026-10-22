@@ -4,6 +4,12 @@
 
 An end-to-end, battle-tested **multi-agent software engineering harness for Claude Code**, extracted from a production 2D isometric game project (*Restoran Tycoon*, built with **Godot 4.7 + Procedural Blender Python Pipeline**).
 
+> [!IMPORTANT]
+> **What This Repo Is (and Isn't):**
+> - **Reference Case Study, Not a Drop-In Package:** This repository contains the **extracted agent workflow, hooks, and scripts** from a private game repository to serve as an architectural reference and inspiration. The game source code (`oyun/`, `blender/sprite_uret.py`, and `tasarim/`) is intentionally excluded.
+> - **Original Language Preserved:** While this README is in English, the actual agent definitions (`.claude/agents/*.md`), `CLAUDE.md`, handoff notes (`notlar/`), and script identifiers are kept in their original **Turkish** as used in production.
+> - **Environment & Coupling:** To run or adapt these scripts directly, note that `test.sh` and `ice_aktar.sh` use Linux-specific GNU utilities (`flock`, `stat -c %Y`) and invoke Godot 4.7, while `ajan_kaydi.py` parses Claude Code's internal `~/.claude/projects/*/*.jsonl` session transcript format.
+
 Unlike generic prompt collections, this repository showcases **deterministic guardrails** that solve the most common failure modes of autonomous coding agents:
 1. **Hallucinated completion reports** ("I ran the tests and reviewer" when the agent actually didn't) — solved via a transcript-inspecting `Stop` hook ([`araclar/ajan_kaydi.py`](./araclar/ajan_kaydi.py)).
 2. **Context window pollution** — solved via strict orchestrator/subagent separation ([`CLAUDE.md`](./CLAUDE.md)) and grep-first reading rules.
@@ -84,11 +90,23 @@ When `esya-modelci` imports new sprites into Godot while `gelistirici` or `test-
 
 ---
 
+## Scope, Prerequisites & Known Limitations
+
+If you want to adapt this architecture for your own projects, keep the following technical constraints in mind:
+
+1. **Not Runnable Standalone Out-of-the-Box:** Because the proprietary game folder (`oyun/`) and Blender script (`blender/sprite_uret.py`) are not included in this repo, running `araclar/test.sh` or `araclar/ice_aktar.sh` directly in this folder will exit with an error unless pointed at a Godot project.
+2. **Hardcoded Agent & Command Names:** [`araclar/ajan_kaydi.py`](./araclar/ajan_kaydi.py) specifically checks for subagent names (`gelistirici`, `esya-modelci`, `inceleyici`) and test output patterns (`SONUÇ: TAMAM` from `araclar/test.sh` or `AUTOTEST TAMAM`). You must update these constants in `ajan_kaydi.py` to match your own agent names and test runner output (`pytest`, `npm test`, `cargo test`, etc.).
+3. **Reliance on Internal Claude Code Transcripts:** `ajan_kaydi.py` inspects `~/.claude/projects/*/<session>.jsonl` and `subagents/*.meta.json`. Since Anthropic does not guarantee backwards compatibility for internal transcript schemas across CLI updates, the parser may need adjustments if Claude Code changes its log structure.
+4. **Linux / POSIX Dependency:** `test.sh` and `ice_aktar.sh` rely on `flock` for reader-writer locking and GNU `stat -c %Y` for silence detection. On macOS, you will need `flock` (e.g. via Homebrew) and BSD `stat -f %m`.
+5. **Process Check vs. Semantic Check:** The `Stop` hook verifies *whether* the reviewer (`inceleyici`) and tests ran in the current turn, not whether every subtle critique raised by the reviewer was semantically resolved.
+
+---
+
 ## Adapting This Workflow to Your Own Project
 
 1. Copy `.claude/`, `araclar/ajan_kaydi.py`, and `CLAUDE.md` into your repository root.
-2. Replace `araclar/test.sh` with your project's test runner (keep the `SONUÇ: TAMAM` / `SONUÇ: BAŞARISIZ` output line or update `TEST_SH` in `araclar/ajan_kaydi.py`).
-3. Update the **Kod haritası (Codebase Map)** section in `CLAUDE.md` so subagents know where each responsibility lives without scanning the entire repository.
+2. Translate or rewrite the agent prompts in `.claude/agents/*.md` and the **Codebase Map** in `CLAUDE.md` to match your tech stack and language preference.
+3. Replace `araclar/test.sh` with your project's test runner, and update the regex (`TEST_SH` and output pattern) + agent names in `araclar/ajan_kaydi.py`.
 4. Keep a living handoff file (`notlar/YARIN.md`) updated after every commit so long autonomous sessions survive context compaction with zero loss of state.
 
 ---

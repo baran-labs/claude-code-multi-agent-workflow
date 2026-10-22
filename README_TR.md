@@ -4,6 +4,11 @@
 
 Bu repo, **Godot 4.7** ve **Blender Python (`bpy`)** ile geliştirilen 2D izometrik bir restoran yönetim oyunu (*Restoran Tycoon*) projesinden ayıklanmış, sahada test edilmiş **üretim seviyesinde (production-grade) Claude Code çoklu ajan iş akışını** içerir.
 
+> [!IMPORTANT]
+> **Bu Reponun Amacı ve Kapsamı (Önemli Not):**
+> - **Tak-Çalıştır Paket Değil, Mimari Referans / Fikir Verme Amaçlıdır:** Bu repo, gerçek bir oyun projesinde kullanılan ajan iş akışını, kancaları (hooks) ve kilit script'lerini **fikir vermesi ve referans olması** amacıyla paylaşır. Oyunun kendi kaynak kodları (`oyun/`, `blender/sprite_uret.py` ve `tasarim/`) bu repoya dahil edilmemiştir.
+> - **Doğrudan Kullanım Şartları:** Script'ler (`test.sh`, `ice_aktar.sh`, `ajan_kaydi.py`) ve ajan tanımları (`.claude/agents/*.md`) orijinal projedeki dosya yollarına, ajan isimlerine ve **Linux (`flock`, GNU `stat -c`)** ortamına göre yazılmıştır. Kendi projenizde doğrudan kullanmak için bu dosyaları kendi teknoloji yığınınıza ve test komutlarınıza göre uyarlamanız gerekir.
+
 Genel amaçlı hazır prompt şablonlarından farklı olarak bu mimari, otonom kodlama ajanlarının en sık düştüğü **4 temel mühendislik sorununu mekanik bariyerlerle** çözer:
 1. **Halüsinasyon Raporlama:** Ajanın testi veya kod incelemesini çalıştırmadığı halde *"çalıştırdım ve geçti"* demesi → `.jsonl` oturum kayıtlarını doğrudan denetleyen `Stop` kancası ([`araclar/ajan_kaydi.py`](./araclar/ajan_kaydi.py)) ile engellenir.
 2. **Bağlam (Context) Şişmesi:** Ana sohbetin büyük dosyaları okuyup bağlamı doldurması → Ana sohbetin yalnızca orkestratör olarak çalışması ([`CLAUDE.md`](./CLAUDE.md)), `grep -n` kuralı ve alt ajanların en fazla 25-30 satırlık özetle dönmesiyle çözülür.
@@ -74,6 +79,18 @@ Ajan kaydı: geliştirici ✓ · modelci – · test ✓ · inceleme ✓
 - **Bağımsız Denetim ve Görsel Modelleme:** `inceleyici` ve `esya-modelci` için `sonnet` (`effort: xhigh`).
 - **Mekanik Test Koşumu:** `test-calistirici` için `haiku` (`effort: medium`, `omitClaudeMd: true`).
 - **Büyük Dosya Kuralı:** Büyük dosyaların baştan sona okunması yasaktır; önce `grep -n` ile ilgili fonksiyon bulunur ve yalnızca o aralık okunur.
+
+---
+
+## Doğrudan Kullanım Şartları ve Bilinen Sınırlılıklar
+
+Bu akışı kendi projenize uyarlarken şu teknik şartları göz önünde bulundurmalısınız:
+
+1. **Tek Başına Çalıştırılamaz:** Oyun klasörü (`oyun/`) ve Blender script'i (`blender/sprite_uret.py`) bu repoda yer almadığı için `araclar/test.sh` veya `araclar/ice_aktar.sh` doğrudan çalıştırıldığında hata verir; kendi test ve derleme komutlarınızla değiştirilmelidir.
+2. **Projeye Özgü Sabit İsimler (Hardcoded):** [`araclar/ajan_kaydi.py`](./araclar/ajan_kaydi.py) içinde ajan adları (`gelistirici`, `esya-modelci`, `inceleyici`) ve test başarı metni (`SONUÇ: TAMAM`) sabittir. Kendi ajan isimlerinizi ve test aracınızı (`pytest`, `npm test` vb.) kullanırken bu sabitleri güncellemeniz gerekir.
+3. **Claude Code İç Kayıt Formatına Bağımlılık:** `ajan_kaydi.py`, `~/.claude/projects/*/<oturum>.jsonl` kayıtlarını doğrudan okur. Anthropic resmi bir şema garantisi vermediği için gelecekteki Claude Code CLI güncellemelerinde log yapısı değişirse betiğin güncellenmesi gerekebilir.
+4. **Linux Bağımlılığı:** `test.sh` ve `ice_aktar.sh` içindeki `flock` ve `stat -c %Y` komutları Linux (GNU coreutils) içindir; macOS ortamında çalıştırmak için `flock` kurulumu ve `stat -f %m` uyarlaması gerekir.
+5. **Süreç Kontrolü vs. İçerik Kontrolü:** `Stop` kancası o turda `inceleyici` ajanının ve testin çalışıp çalışmadığını denetler; ancak inceleyicinin bulduğu her bulgunun anlamsal olarak çözülüp çözülmediğini karar olarak ana sohbete bırakır.
 
 ---
 
