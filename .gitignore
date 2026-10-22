@@ -1,0 +1,5 @@
+__pycache__/
+*.py[cod]
+araclar/.kilit
+.claude/worktrees/
+.DS_Store

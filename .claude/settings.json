@@ -1,0 +1,16 @@
+{
+  "autoCompactWindow": 400000,
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -I \"$CLAUDE_PROJECT_DIR/araclar/ajan_kaydi.py\" --kanca",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}
