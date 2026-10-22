@@ -97,13 +97,16 @@ def alt_ajanlar(oturum_klasoru, baslangic):
 
 
 # Komutun bir parçasının başı: komutun başı ya da "&&", "||", ";", "|", "(" ve satır sonundan sonrası. Önünde ortam
-# değişkeni (ZAMAN_ASIMI=400), time, bash ya da timeout olabilir.
-_PARCA_BASI = r"(?:^|&&|\|\||[;|(\n])\s*(?:\w+=\S*\s+)*(?:(?:time|bash|sh|env|timeout(?:\s+-\S+)*\s+\d+\S*)\s+)*"
-# araclar/test.sh'yi çalıştıran komut ("cd ... && araclar/test.sh pc", "/tam/yol/araclar/test.sh");
+# değişkeni (ZAMAN_ASIMI=400), time, bash, python ya da timeout olabilir (Linux, macOS ve Windows uyumlu).
+_PARCA_BASI = (
+    r"(?:^|&&|\|\||[;|(\n])\s*(?:\w+=\S*\s+)*"
+    r"(?:(?:time|bash|sh|env|python3?|py(?:\s+-\S+)*|timeout(?:\s+-\S+)*\s+\d+\S*)\s+)*"
+)
+# araclar/test.sh ya da araclar/test.py'yi çalıştıran komut ("cd ... && araclar/test.sh pc", "python araclar/test.py");
 # "git add araclar/test.sh" ya da "cat araclar/test.sh" sayılmaz.
-TEST_SH = re.compile(_PARCA_BASI + r"(?:\S*/)?araclar/test\.sh(?=$|[\s;&|)])")
+TEST_SH = re.compile(_PARCA_BASI + r"(?:\S*[/\\])?araclar[/\\]test\.(?:sh|py)(?=$|[\s;&|)])")
 # Godot'yu --autotest ile doğrudan çalıştıran komut ("godot --headless --path oyun -- --autotest").
-AUTOTEST = re.compile(_PARCA_BASI + r"(?:\S*/)?godot\b[^;&|\n]*\s--autotest\b")
+AUTOTEST = re.compile(_PARCA_BASI + r"(?:\S*[/\\])?godot(?:\.exe)?\b[^;&|\n]*\s--autotest\b")
 
 
 # Heredoc gövdesi (<<'EOF' ... EOF) ve tırnak içleri komut değil metindir (ör. commit mesajı).

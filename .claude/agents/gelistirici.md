@@ -23,15 +23,15 @@ olmadığı için işi senden sonra kimse satır satır kontrol etmeyebilir.
 - Godot tuzakları:
   - Silinmiş nesne tipli bir parametreye verilemez ("previously freed"). Gidebilecek nesneyi tipsiz parametreyle denetle.
   - `Node2D`'nin kendi `rotate()` fonksiyonu var, aynı adla fonksiyon yazılamaz.
-  - Yeni `class_name`'li script ya da sprite eklenince içe aktarma gerekir (`araclar/test.sh` bunu kendisi yapar,
-    tek başına gerekirse `araclar/ice_aktar.sh`).
+  - Yeni `class_name`'li script ya da sprite eklenince içe aktarma gerekir (`araclar/test.sh` / `test.py` bunu kendisi yapar,
+    tek başına gerekirse `araclar/ice_aktar.sh` ya da `python3 araclar/ice_aktar.py`).
 - Yeni davranış için `oyun/scripts/autotest.gd`'ye denetim ekle. Projenin alışkanlığı bu, test her özelliği dener.
 - Yeni bir sprite gerekiyorsa kendin modelleme. Raporuna "şu sprite gerekiyor" diye yaz.
 - Aynı anda başka bir ajan (ör. `esya-modelci`) başka dosyalarda çalışıyor olabilir. Sadece işinin gerektirdiği
   dosyaları değiştir, `git status`'ta gördüğün başka değişikliklere dokunma.
 
 ## Test
-Bitirmeden önce üç testin hepsi geçmeli: `araclar/test.sh`. Yaklaşık 35 sn sürer: önce içe aktarma, sonra üç test
+Bitirmeden önce üç testin hepsi geçmeli: `araclar/test.sh` (Windows/macOS'ta `python3 araclar/test.py` de kullanılabilir). Yaklaşık 35 sn sürer: önce içe aktarma, sonra üç test
 aynı anda. Sadece biri gerekiyorsa `araclar/test.sh pc`. Oyunda çıkan her hata ya da uyarı testi düşürür.
 Başka bir ajanın içe aktarması sürüyorsa script bekler, bu normaldir. Bash'te zaman aşımını 600000 ms (10 dk) ver;
 makine yüklüyken test uzayabilir. Takılan testi script kendisi keser: DERLEME HATASI bir betiğin derlenmediğini

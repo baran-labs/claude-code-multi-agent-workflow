@@ -8,7 +8,7 @@ An end-to-end, battle-tested **multi-agent software engineering harness for Clau
 > **What This Repo Is (and Isn't):**
 > - **Reference Case Study, Not a Drop-In Package:** This repository contains the **extracted agent workflow, hooks, and scripts** from a private game repository to serve as an architectural reference and inspiration. The game source code (`oyun/`, `blender/sprite_uret.py`, and `tasarim/`) is intentionally excluded.
 > - **Original Language Preserved:** While this README is in English, the actual agent definitions (`.claude/agents/*.md`), `CLAUDE.md`, handoff notes (`notlar/`), and script identifiers are kept in their original **Turkish** as used in production.
-> - **Environment & Coupling:** To run or adapt these scripts directly, note that `test.sh` and `ice_aktar.sh` use Linux-specific GNU utilities (`flock`, `stat -c %Y`) and invoke Godot 4.7, while `ajan_kaydi.py` parses Claude Code's internal `~/.claude/projects/*/*.jsonl` session transcript format.
+> - **Cross-Platform Support (Linux, macOS, Windows):** Both native Bash scripts (`araclar/test.sh`, `araclar/ice_aktar.sh`) and cross-platform pure Python equivalents (`araclar/test.py`, `araclar/ice_aktar.py`) are included. On macOS or Windows Git Bash, the `.sh` scripts automatically delegate to the Python implementations (`fcntl.flock` on POSIX/macOS, `msvcrt.locking` on Windows).
 
 Unlike generic prompt collections, this repository showcases **deterministic guardrails** that solve the most common failure modes of autonomous coding agents:
 1. **Hallucinated completion reports** ("I ran the tests and reviewer" when the agent actually didn't) — solved via a transcript-inspecting `Stop` hook ([`araclar/ajan_kaydi.py`](./araclar/ajan_kaydi.py)).
@@ -52,9 +52,9 @@ flowchart TD
 | [`.claude/agents/inceleyici.md`](./.claude/agents/inceleyici.md) | **Independent Code Reviewer (`sonnet`, `effort: xhigh`, `maxTurns: 60`):** Strictly read-only (`disallowedTools: Edit, Write, NotebookEdit`). Reviews uncommitted diffs against design docs and Godot edge cases before every commit. |
 | [`.claude/agents/esya-modelci.md`](./.claude/agents/esya-modelci.md) | **Procedural 3D Sprite Modeler (`sonnet`, `effort: xhigh`, `maxTurns: 60`):** Writes Blender Python (`bpy`) code for a single model, renders only that item, visually inspects the output PNG (comparing scale side-by-side via PIL), and iterates up to 5 times. |
 | [`.claude/agents/test-calistirici.md`](./.claude/agents/test-calistirici.md) | **Lightweight Test Runner (`haiku`, `effort: medium`, `omitClaudeMd: true`):** Runs the headless test suite in the background without loading project context. |
-| [`araclar/ajan_kaydi.py`](./araclar/ajan_kaydi.py) | **Anti-Hallucination `Stop` Hook:** Parses actual Claude Code `.jsonl` session transcripts and subagent metadata to verify which agents ran and whether the latest test run passed. |
-| [`araclar/test.sh`](./araclar/test.sh) | **Parallel Headless Test Runner:** Runs PC (`1280x720`), Phone `20:9`, and Phone `16:9` simulations concurrently at `--fixed-fps 60` under a shared `flock -s` lock, failing on any engine `ERROR` or `WARNING`. |
-| [`araclar/ice_aktar.sh`](./araclar/ice_aktar.sh) | **Serialized Asset Importer:** Runs `godot --headless --import` under an exclusive `flock -x` lock so parallel modelers and test runners never corrupt imports. |
+| [`araclar/ajan_kaydi.py`](./araclar/ajan_kaydi.py) | **Anti-Hallucination `Stop` Hook (Linux/macOS/Windows):** Parses actual Claude Code `.jsonl` session transcripts and subagent metadata to verify which agents ran and whether the latest test run passed. |
+| [`araclar/test.py`](./araclar/test.py) / [`test.sh`](./araclar/test.sh) | **Cross-Platform Parallel Headless Test Runner:** Runs PC (`1280x720`), Phone `20:9`, and Phone `16:9` simulations concurrently at `--fixed-fps 60` under a cross-platform file lock (`fcntl.flock` / `msvcrt.locking`), failing on any engine `ERROR` or `WARNING`. |
+| [`araclar/ice_aktar.py`](./araclar/ice_aktar.py) / [`ice_aktar.sh`](./araclar/ice_aktar.sh) | **Cross-Platform Serialized Asset Importer:** Runs `godot --headless --import` under an exclusive file lock so parallel modelers and test runners never corrupt imports across Linux, macOS, and Windows. |
 | [`notlar/YARIN.md`](./notlar/YARIN.md) | **Session State Machine:** Real multi-day autonomous progress log used to restore state seamlessly after context compaction (`autoCompactWindow`). |
 | [`notlar/is_11_cihaz_seviyeleri.md`](./notlar/is_11_cihaz_seviyeleri.md) | **Sample Task Specification:** Example of a zero-ambiguity specification written by the orchestrator for the `gelistirici` subagent. |
 
@@ -73,11 +73,11 @@ Instead of trusting the model's self-report, [`.claude/settings.json`](./.claude
   ```
 - If the assistant tries to finish a turn without including the exact ground-truth status line, the hook returns `{"decision": "block", "reason": "..."}` (up to 3 times per message to prevent infinite loops).
 
-### 2. OS-Level Reader-Writer Concurrency (`flock`)
+### 2. OS-Level Cross-Platform Concurrency (`flock` / `msvcrt`)
 When `esya-modelci` imports new sprites into Godot while `gelistirici` or `test-calistirici` runs headless tests in the same workspace, race conditions on `.godot/` import caches normally break both agents.
-- [`araclar/ice_aktar.sh`](./araclar/ice_aktar.sh) acquires an **exclusive lock** (`flock -x 9`) on `araclar/.kilit`.
-- [`araclar/test.sh`](./araclar/test.sh) acquires a **shared lock** (`flock -s 9`) on `araclar/.kilit` after running import.
-- Multiple test suites can run concurrently (each using its own PID-isolated save file `test_kayit_<pid>`), while imports automatically serialize before or after test runs.
+- [`araclar/ice_aktar.py`](./araclar/ice_aktar.py) (and `ice_aktar.sh`) acquires an **exclusive lock** on `araclar/.kilit` (`fcntl.LOCK_EX` on Linux/macOS, `msvcrt.LK_NBLCK` on Windows).
+- [`araclar/test.py`](./araclar/test.py) (and `test.sh`) acquires a **shared lock** on `araclar/.kilit` after running import.
+- Multiple test suites can run concurrently (each using its own PID-isolated save file `test_kayit_<pid>` in the OS-appropriate Godot `app_userdata` directory), while imports automatically serialize before or after test runs.
 
 ### 3. Cost, Model & Context Tiering
 | Role | Model | Effort | Context Strategy |
@@ -94,10 +94,10 @@ When `esya-modelci` imports new sprites into Godot while `gelistirici` or `test-
 
 If you want to adapt this architecture for your own projects, keep the following technical constraints in mind:
 
-1. **Not Runnable Standalone Out-of-the-Box:** Because the proprietary game folder (`oyun/`) and Blender script (`blender/sprite_uret.py`) are not included in this repo, running `araclar/test.sh` or `araclar/ice_aktar.sh` directly in this folder will exit with an error unless pointed at a Godot project.
-2. **Hardcoded Agent & Command Names:** [`araclar/ajan_kaydi.py`](./araclar/ajan_kaydi.py) specifically checks for subagent names (`gelistirici`, `esya-modelci`, `inceleyici`) and test output patterns (`SONUÇ: TAMAM` from `araclar/test.sh` or `AUTOTEST TAMAM`). You must update these constants in `ajan_kaydi.py` to match your own agent names and test runner output (`pytest`, `npm test`, `cargo test`, etc.).
+1. **Not Runnable Standalone Out-of-the-Box:** Because the proprietary game folder (`oyun/`) and Blender script (`blender/sprite_uret.py`) are not included in this repo, running `araclar/test.py` (`araclar/test.sh`) or `araclar/ice_aktar.py` (`araclar/ice_aktar.sh`) directly in this folder will exit with an error unless pointed at a Godot project.
+2. **Hardcoded Agent & Command Names:** [`araclar/ajan_kaydi.py`](./araclar/ajan_kaydi.py) specifically checks for subagent names (`gelistirici`, `esya-modelci`, `inceleyici`) and test output patterns (`SONUÇ: TAMAM` from `test.sh`/`test.py` or `AUTOTEST TAMAM`). You must update these constants in `ajan_kaydi.py` to match your own agent names and test runner output (`pytest`, `npm test`, `cargo test`, etc.).
 3. **Reliance on Internal Claude Code Transcripts:** `ajan_kaydi.py` inspects `~/.claude/projects/*/<session>.jsonl` and `subagents/*.meta.json`. Since Anthropic does not guarantee backwards compatibility for internal transcript schemas across CLI updates, the parser may need adjustments if Claude Code changes its log structure.
-4. **Linux / POSIX Dependency:** `test.sh` and `ice_aktar.sh` rely on `flock` for reader-writer locking and GNU `stat -c %Y` for silence detection. On macOS, you will need `flock` (e.g. via Homebrew) and BSD `stat -f %m`.
+4. **Shared Working Tree Trade-off:** Running `esya-modelci` and `gelistirici` in parallel inside the same working tree works only because their file scopes are strictly disjoint (`blender/` vs `oyun/scripts/`). If your agents touch overlapping files, use isolated `git worktree` instances instead.
 5. **Process Check vs. Semantic Check:** The `Stop` hook verifies *whether* the reviewer (`inceleyici`) and tests ran in the current turn, not whether every subtle critique raised by the reviewer was semantically resolved.
 
 ---

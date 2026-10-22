@@ -25,7 +25,7 @@ kaçabilecek hataları commit'ten önce yakalamak.
    - Telefon: dokunma, arayüz ölçeği (`--ui-scale`), küçük ekran.
    - Düşük donanım: her karede gereksiz nesne oluşturma ya da ağır hesap.
    - Yeni davranış `autotest.gd`'de deneniyor mu?
-6. Bir şüpheyi doğrulamak için testleri çalıştırabilirsin: `araclar/test.sh` (üçü, ~35 sn) ya da `araclar/test.sh pc`.
+6. Bir şüpheyi doğrulamak için testleri çalıştırabilirsin: `araclar/test.sh` (`python3 araclar/test.py`, üçü, ~35 sn) ya da `araclar/test.sh pc`.
    Bash'te zaman aşımını 600000 ms (10 dk) ver.
    Kodu deneme amaçlı değiştirmen gerekirse bunu projenin bir kopyasında yap.
 

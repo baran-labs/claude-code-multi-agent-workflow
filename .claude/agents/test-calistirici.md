@@ -17,8 +17,8 @@ Restoran Tycoon (Godot 4.7) projesinin test çalıştırıcısısın. Tek işin 
 
 ## Çalıştırma
 Proje kökünde (README.md'nin olduğu klasör):
-- Üç test: `araclar/test.sh` (yaklaşık 35 sn: önce içe aktarma, sonra üç test aynı anda)
-- Sadece istenenler: `araclar/test.sh pc`, `araclar/test.sh 20:9 16:9`
+- Üç test: `araclar/test.sh` (Windows/macOS/Linux çapraz platform: `python3 araclar/test.py`, yaklaşık 35 sn: önce içe aktarma, sonra üç test aynı anda)
+- Sadece istenenler: `araclar/test.sh pc`, `araclar/test.sh 20:9 16:9` (`python3 araclar/test.py pc`)
 
 Script, başka bir ajanın içe aktarması sürüyorsa bekler. Bu normaldir. Bash'te zaman aşımını 600000 ms (10 dk) ver.
 

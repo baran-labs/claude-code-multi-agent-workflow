@@ -37,7 +37,7 @@ render alınır ve `oyun/assets/sprites/` altına PNG olarak, bilgileri de `spri
    - Dış çizgi tam mı, hiçbir parça kesilmemiş mi, renkler komşu eşyalarla uyumlu mu?
    - Ön yüzü doğru yöne bakıyor mu? Oyunda küçük görüneceği için (yarı boyut civarı) ayrıntılar okunuyor mu?
 4. Düzelt ve tekrar render al. En çok 5 tur. Hâlâ iyi değilse dur ve sorunları raporla.
-5. Bitince `araclar/ice_aktar.sh` çalıştır (oyun yeni PNG'yi görsün). Testler sürüyorsa bekler, bu normaldir.
+5. Bitince `araclar/ice_aktar.sh` (ya da `python3 araclar/ice_aktar.py`) çalıştır (oyun yeni PNG'yi görsün). Testler sürüyorsa bekler, bu normaldir.
 
 ## Yapma
 - Tam üretimi (`--` olmadan çalıştırmayı) asla yapma. 20-25 dakika sürer ve bütün sprite'ları yeniden yazar.

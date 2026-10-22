@@ -9,9 +9,9 @@ sonraki oturumun notları `notlar/YARIN.md`'de.
   ses aygıtı boşta kalsın. Otomatik testler (`araclar/test.sh`) yine `--headless` çalışır.
 - Tam sprite üretiminden (~20-25 dk) önce kullanıcıya süreyi ve o sırada oyunun açılmayabileceğini söyle.
   Tek model birkaç saniye sürer.
-- Testler: `araclar/test.sh` (önce içe aktarma, sonra üç ölçek aynı anda, ~35 sn, kısa özet). Sadece PC: `araclar/test.sh pc`.
+- Testler: `araclar/test.sh` ya da çapraz platform (Windows/macOS/Linux) için `python3 araclar/test.py` (önce içe aktarma, sonra üç ölçek aynı anda, ~35 sn, kısa özet). Sadece PC: `araclar/test.sh pc` (`python3 araclar/test.py pc`).
   Bash'te zaman aşımını 600000 ms ver. Takılan testi script keser (DERLEME HATASI, TAKILDI, ZAMAN AŞIMI).
-- Yeni sprite ya da `class_name`'li script eklenince içe aktarma gerekir: `araclar/ice_aktar.sh` (`test.sh` bunu kendisi yapar).
+- Yeni sprite ya da `class_name`'li script eklenince içe aktarma gerekir: `araclar/ice_aktar.sh` ya da `python3 araclar/ice_aktar.py` (`test.sh` / `test.py` bunu kendisi yapar).
 - Git: commit serbest, push yok.
 
 ## Kod haritası

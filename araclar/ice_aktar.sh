@@ -10,6 +10,12 @@
 set -u
 cd "$(dirname "$0")/.."
 
+# macOS (Darwin), Windows (Git Bash / MSYS) veya flock/timeout olmayan ortamlarda çapraz platform Python sürümünü çalıştır.
+if [ "$(uname -s 2>/dev/null)" != "Linux" ] || ! command -v flock >/dev/null 2>&1 || ! command -v timeout >/dev/null 2>&1; then
+    PY_BIN=$(command -v python3 2>/dev/null || command -v python 2>/dev/null)
+    exec "$PY_BIN" araclar/ice_aktar.py "$@"
+fi
+
 exec 9> araclar/.kilit
 if ! flock -x -w "${KILIT_BEKLEME:-600}" 9; then
     echo "İÇE AKTARMA BAŞARISIZ: Kilit ${KILIT_BEKLEME:-600} sn içinde alınamadı; testler sürüyor ya da takıldı (araclar/.kilit)."

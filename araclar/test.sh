@@ -16,6 +16,12 @@
 set -u
 cd "$(dirname "$0")/.."
 
+# macOS (Darwin), Windows (Git Bash / MSYS) veya flock/timeout olmayan ortamlarda çapraz platform Python sürümünü çalıştır.
+if [ "$(uname -s 2>/dev/null)" != "Linux" ] || ! command -v flock >/dev/null 2>&1 || ! command -v timeout >/dev/null 2>&1; then
+    PY_BIN=$(command -v python3 2>/dev/null || command -v python 2>/dev/null)
+    exec "$PY_BIN" araclar/test.py "$@"
+fi
+
 # Headless'ta --resolution işlemez (pencere 64x64 kalır); pencere boyutunu test --win= ile kendisi ayarlar.
 # --view: beklenen görünür alan (arayüz ölçeği 1.8 olunca 1080 piksellik yükseklik 600'e iner).
 # --fixed-fps 60: Her kare oyunun 1/60 saniyesidir (oyunun 60 FPS'i gibi), kareler gerçek zamanı beklemeden

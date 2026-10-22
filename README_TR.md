@@ -7,7 +7,8 @@ Bu repo, **Godot 4.7** ve **Blender Python (`bpy`)** ile geliştirilen 2D izomet
 > [!IMPORTANT]
 > **Bu Reponun Amacı ve Kapsamı (Önemli Not):**
 > - **Tak-Çalıştır Paket Değil, Mimari Referans / Fikir Verme Amaçlıdır:** Bu repo, gerçek bir oyun projesinde kullanılan ajan iş akışını, kancaları (hooks) ve kilit script'lerini **fikir vermesi ve referans olması** amacıyla paylaşır. Oyunun kendi kaynak kodları (`oyun/`, `blender/sprite_uret.py` ve `tasarim/`) bu repoya dahil edilmemiştir.
-> - **Doğrudan Kullanım Şartları:** Script'ler (`test.sh`, `ice_aktar.sh`, `ajan_kaydi.py`) ve ajan tanımları (`.claude/agents/*.md`) orijinal projedeki dosya yollarına, ajan isimlerine ve **Linux (`flock`, GNU `stat -c`)** ortamına göre yazılmıştır. Kendi projenizde doğrudan kullanmak için bu dosyaları kendi teknoloji yığınınıza ve test komutlarınıza göre uyarlamanız gerekir.
+> - **Çapraz Platform Desteği (Windows, macOS ve Linux):** Hem Bash script'leri (`araclar/test.sh`, `araclar/ice_aktar.sh`) hem de dış komuta ihtiyaç duymayan saf Python karşılıkları (`araclar/test.py`, `araclar/ice_aktar.py`) mevcuttur. macOS ve Windows (Git Bash / PowerShell) ortamlarında Python sürümleri (`fcntl.flock` / `msvcrt.locking`) doğrudan çalışır.
+> - **Doğrudan Kullanım Şartları:** Ajan tanımları (`.claude/agents/*.md`) ve araçlar orijinal projedeki dosya yollarına ve ajan isimlerine göre yazılmıştır. Kendi projenizde doğrudan kullanmak için bu dosyaları kendi teknoloji yığınınıza ve test komutlarınıza göre uyarlamanız gerekir.
 
 Genel amaçlı hazır prompt şablonlarından farklı olarak bu mimari, otonom kodlama ajanlarının en sık düştüğü **4 temel mühendislik sorununu mekanik bariyerlerle** çözer:
 1. **Halüsinasyon Raporlama:** Ajanın testi veya kod incelemesini çalıştırmadığı halde *"çalıştırdım ve geçti"* demesi → `.jsonl` oturum kayıtlarını doğrudan denetleyen `Stop` kancası ([`araclar/ajan_kaydi.py`](./araclar/ajan_kaydi.py)) ile engellenir.
@@ -51,9 +52,9 @@ flowchart TD
 | [`.claude/agents/inceleyici.md`](./.claude/agents/inceleyici.md) | **Bağımsız Kod İnceleyici (`sonnet`, `effort: xhigh`, `maxTurns: 60`):** Yazma araçları kapalıdır (`disallowedTools: Edit, Write, NotebookEdit`). Her geliştirici işinden sonra, commit'ten önce `git diff` ve tasarım belgelerini karşılaştırır. |
 | [`.claude/agents/esya-modelci.md`](./.claude/agents/esya-modelci.md) | **Prosedürel Sprite Modelcisi (`sonnet`, `effort: xhigh`, `maxTurns: 60`):** `blender/sprite_uret.py` içinde sadece tek bir modeli kodlar, render alır, çıkan PNG'ye bizzat bakarak oran/çizgi kontrolü yapar. |
 | [`.claude/agents/test-calistirici.md`](./.claude/agents/test-calistirici.md) | **Hafif Test Koşucu (`haiku`, `effort: medium`, `omitClaudeMd: true`):** Ana sohbet başka bir işle ilgilenirken arka planda düşük maliyetle testleri çalıştırır. |
-| [`araclar/ajan_kaydi.py`](./araclar/ajan_kaydi.py) | **Oturum Kaydı Doğrulayıcı (`Stop` Kancası):** Claude'un kendi beyanına güvenmez; doğrudan `.jsonl` oturum kayıtlarını okuyarak o turda hangi ajanların çalıştığını ve son testin geçip geçmediğini doğrular. |
-| [`araclar/test.sh`](./araclar/test.sh) | **Paralel Headless Test Script'i:** Önce içe aktarmayı yapar, ardından PC, 20:9 ve 16:9 telefon ölçeklerindeki testleri `--fixed-fps 60` ile aynı anda koşar (~35 sn). |
-| [`araclar/ice_aktar.sh`](./araclar/ice_aktar.sh) | **Kilitli Varlık İçe Aktarıcı:** `flock -x` kilidi altında Godot `--import` çalıştırır; testlerle çakışmayı önler. |
+| [`araclar/ajan_kaydi.py`](./araclar/ajan_kaydi.py) | **Oturum Kaydı Doğrulayıcı (`Stop` Kancası - Windows/macOS/Linux):** Claude'un kendi beyanına güvenmez; doğrudan `.jsonl` oturum kayıtlarını okuyarak o turda hangi ajanların çalıştığını ve son testin geçip geçmediğini doğrular. |
+| [`araclar/test.py`](./araclar/test.py) / [`test.sh`](./araclar/test.sh) | **Çapraz Platform Paralel Headless Test Script'i:** Önce içe aktarmayı yapar, ardından PC, 20:9 ve 16:9 telefon ölçeklerindeki testleri `--fixed-fps 60` ile aynı anda koşar (~35 sn). Windows, macOS ve Linux'ta çalışır. |
+| [`araclar/ice_aktar.py`](./araclar/ice_aktar.py) / [`ice_aktar.sh`](./araclar/ice_aktar.sh) | **Çapraz Platform Kilitli Varlık İçe Aktarıcı:** Dosya kilidi (`fcntl.flock` / `msvcrt.locking`) altında Godot `--import` çalıştırır; testlerle çakışmayı önler. |
 | [`notlar/YARIN.md`](./notlar/YARIN.md) | **Durum Makinesi / Devir Teslim Notları:** Bağlam 400 bin token'a ulaşıp otomatik özetlendiğinde veya yeni oturuma geçildiğinde kayıpsız devam etmeyi sağlayan gerçek oturum günlüğü. |
 | [`notlar/is_11_cihaz_seviyeleri.md`](./notlar/is_11_cihaz_seviyeleri.md) | **Örnek Görev Tarifi:** Ana sohbetin `gelistirici` ajanına gönderdiği, tasarım belgelerine referanslı ve kabul ölçütleri netleştirilmiş gerçek bir görev spesifikasyonu. |
 
@@ -86,10 +87,10 @@ Ajan kaydı: geliştirici ✓ · modelci – · test ✓ · inceleme ✓
 
 Bu akışı kendi projenize uyarlarken şu teknik şartları göz önünde bulundurmalısınız:
 
-1. **Tek Başına Çalıştırılamaz:** Oyun klasörü (`oyun/`) ve Blender script'i (`blender/sprite_uret.py`) bu repoda yer almadığı için `araclar/test.sh` veya `araclar/ice_aktar.sh` doğrudan çalıştırıldığında hata verir; kendi test ve derleme komutlarınızla değiştirilmelidir.
+1. **Tek Başına Çalıştırılamaz:** Oyun klasörü (`oyun/`) ve Blender script'i (`blender/sprite_uret.py`) bu repoda yer almadığı için `araclar/test.py` (`test.sh`) veya `araclar/ice_aktar.py` (`ice_aktar.sh`) doğrudan çalıştırıldığında hata verir; kendi test ve derleme komutlarınızla değiştirilmelidir.
 2. **Projeye Özgü Sabit İsimler (Hardcoded):** [`araclar/ajan_kaydi.py`](./araclar/ajan_kaydi.py) içinde ajan adları (`gelistirici`, `esya-modelci`, `inceleyici`) ve test başarı metni (`SONUÇ: TAMAM`) sabittir. Kendi ajan isimlerinizi ve test aracınızı (`pytest`, `npm test` vb.) kullanırken bu sabitleri güncellemeniz gerekir.
 3. **Claude Code İç Kayıt Formatına Bağımlılık:** `ajan_kaydi.py`, `~/.claude/projects/*/<oturum>.jsonl` kayıtlarını doğrudan okur. Anthropic resmi bir şema garantisi vermediği için gelecekteki Claude Code CLI güncellemelerinde log yapısı değişirse betiğin güncellenmesi gerekebilir.
-4. **Linux Bağımlılığı:** `test.sh` ve `ice_aktar.sh` içindeki `flock` ve `stat -c %Y` komutları Linux (GNU coreutils) içindir; macOS ortamında çalıştırmak için `flock` kurulumu ve `stat -f %m` uyarlaması gerekir.
+4. **Ortak Çalışma Dizini (Shared Working Tree) Sınırı:** `esya-modelci` ve `gelistirici` ajanlarının aynı klasörde paralel çalışabilmesi, tamamen farklı dosyalara (`blender/` vs `oyun/scripts/`) dokunmalarına dayanır. Aynı dosyalara dokunabilecek paralel ajanlar için `git worktree` izolasyonu kullanılmalıdır.
 5. **Süreç Kontrolü vs. İçerik Kontrolü:** `Stop` kancası o turda `inceleyici` ajanının ve testin çalışıp çalışmadığını denetler; ancak inceleyicinin bulduğu her bulgunun anlamsal olarak çözülüp çözülmediğini karar olarak ana sohbete bırakır.
 
 ---

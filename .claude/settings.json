@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 -I \"$CLAUDE_PROJECT_DIR/araclar/ajan_kaydi.py\" --kanca",
+            "command": "python3 -I \"$CLAUDE_PROJECT_DIR/araclar/ajan_kaydi.py\" --kanca 2>/dev/null || python -I \"$CLAUDE_PROJECT_DIR/araclar/ajan_kaydi.py\" --kanca",
             "timeout": 30
           }
         ]
